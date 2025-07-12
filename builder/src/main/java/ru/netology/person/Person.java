@@ -1,63 +1,84 @@
 package ru.netology.person;
 
-import java.util.Optional;
 import java.util.OptionalInt;
 
-// Используем record для неизменяемого хранения данных
-public record Person(String name, String surname, OptionalInt age, Optional<String> address) {
+public class Person {
+    protected final String name;
+    protected final String surname;
+    protected int age;
+    protected String address;
 
-    // Проверки можно добавить в компактный конструктор
-    public Person {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Имя не может быть пустым");
-        }
-        if (surname == null || surname.isBlank()) {
-            throw new IllegalArgumentException("Фамилия не может быть пустой");
-        }
+    protected Person(String name, String surname, int age, String address) {
+        this.name = name;
+        this.surname = surname;
+        this.age = age;
+        this.address = address;
     }
 
-    // Методы has... теперь просто проверяют наличие значения в Optional
     public boolean hasAge() {
-        return age.isPresent();
+        return age != -1;
     }
 
     public boolean hasAddress() {
-        return address.isPresent() && !address.get().isBlank();
+        return address != null && !address.isBlank();
     }
 
-    // Геттеры name(), surname(), age(), address() создаются автоматически
-
-    // Вместо setAddress, создаем новый объект с новым адресом ("with-er")
-    public Person withAddress(String newAddress) {
-        return new Person(this.name, this.surname, this.age, Optional.ofNullable(newAddress));
+    public String getName() {
+        return name;
     }
 
-    // Вместо happyBirthday, создаем новый объект с увеличенным возрастом
-    public Person happyBirthday() {
-        if (this.hasAge()) {
-            return new Person(this.name, this.surname, OptionalInt.of(this.age.getAsInt() + 1), this.address);
+    public String getSurname() {
+        return surname;
+    }
+
+    public OptionalInt getAge() {
+        if (hasAge()) {
+            return OptionalInt.of(age);
+        } else {
+            return OptionalInt.empty();
         }
-        // Если возраста нет, возвращаем себя же без изменений
-        return this;
     }
 
-    // Метод для создания билдера ребенка
+    public String getAddress() {
+        if (hasAddress()) {
+            return address;
+        } else {
+            return "Адрес неизвестен";
+        }
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public void happyBirthday() {
+        if (hasAge()) {
+            this.age++;
+        }
+    }
+
     public PersonBuilder newChildBuilder() {
         return new PersonBuilder()
                 .setSurname(this.surname)
-                .setAddress(this.address.orElse(null)) // Извлекаем значение из Optional
+                .setAddress(this.address)
                 .setAge(0);
     }
 
-    // toString() генерируется автоматически и выглядит примерно так:
-    // Person[name=Анна, surname=Вольф, age=OptionalInt[31], address=Optional[Сидней]]
-    // Если нужно более красивое представление, можно переопределить:
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(name).append(" ").append(surname);
-        age.ifPresent(a -> sb.append(", возраст: ").append(a));
-        address.ifPresent(addr -> sb.append(", город: ").append(addr));
+        if (hasAge()) {
+            sb.append(", возраст: ").append(age);
+        }
+        if (hasAddress()) {
+            sb.append(", город: ").append(address);
+        }
         return sb.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(name, surname);
     }
 }

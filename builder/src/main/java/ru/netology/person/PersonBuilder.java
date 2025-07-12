@@ -1,13 +1,10 @@
 package ru.netology.person;
 
-import java.util.Optional;
-import java.util.OptionalInt;
-
 public class PersonBuilder {
     private String name;
     private String surname;
-    private OptionalInt age = OptionalInt.empty();
-    private Optional<String> address = Optional.empty();
+    private int age = -1;
+    private String address;
 
     public PersonBuilder setName(String name) {
         this.name = name;
@@ -20,24 +17,25 @@ public class PersonBuilder {
     }
 
     public PersonBuilder setAge(int age) {
-        if (age < 0) {
-            throw new IllegalArgumentException("Возраст не может быть отрицательным");
+        if (age < 0 || age > 150) {
+            throw new IllegalArgumentException("Некорректный возраст: " + age);
         }
-        this.age = OptionalInt.of(age);
+        this.age = age;
         return this;
     }
 
     public PersonBuilder setAddress(String address) {
-        this.address = Optional.ofNullable(address);
+        this.address = address;
         return this;
     }
 
     public Person build() {
-        // Проверка на обязательные поля
-        if (name == null || surname == null) {
-            throw new IllegalStateException("Недостаточно данных для создания объекта Person. Имя и фамилия обязательны.");
+        if (name == null || name.isBlank()) {
+            throw new IllegalStateException("Имя не может быть пустым");
         }
-        // Вызываем конструктор record. Валидация внутри конструктора тоже сработает.
+        if (surname == null || surname.isBlank()) {
+            throw new IllegalStateException("Фамилия не может быть пустой");
+        }
         return new Person(name, surname, age, address);
     }
 }
